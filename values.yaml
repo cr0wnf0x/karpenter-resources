@@ -1,0 +1,66 @@
+# Base values that are common across all clusters.
+# Cluster-specific overrides will be provided in separate files
+# (e.g., values-dbp06.yaml, values-dbp07.yaml).
+
+global:
+  # These are placeholders and MUST be overridden in cluster-specific files.
+  clusterName: "default-cluster"
+  projectId: "default-project"
+  region: "default-region"
+  serviceAccount: "karpenter-system@{{ $.Values.global.projectId }}.iam.gserviceaccount.com"
+
+nodePools:
+  - name: foobar
+    annotations:
+      kubernetes.io/description: "General purpose NodePool for foobar on {{ $.Values.global.clusterName }}"
+    disruption:
+      budgets:
+      - nodes: "3"
+      consolidateAfter: 90s
+      consolidationPolicy: WhenEmpty
+    template:
+      metadata:
+        labels:
+          environment: "foobar"
+      spec:
+        terminationGracePeriod: 48h
+        taints:
+        - key: environment
+          value: "foobar"
+          effect: NoSchedule
+        requirements:
+        - key: "karpenter.sh/capacity-type"
+          operator: In
+          values: [ "on-demand", "spot" ]
+        - key: "karpenter.k8s.gcp/instance-family"
+          operator: In
+          values: [ "c3-standard" ]
+        - key: "karpenter.k8s.gcp/instance-cpu"
+          operator: Lt
+          values: [ "16" ]
+        - key: "kubernetes.io/arch"
+          operator: In
+          values: [ "amd64" ]
+    nodeClass:
+      # The network tags are now templated.
+      imageSelectorTerms:
+      - alias: ContainerOptimizedOS@latest
+      networkTags:
+      - "k8s-{{ $.Values.global.clusterName }}"
+      disks:
+      - boot: true
+        sizeGiB: 128
+        category: "pd-ssd"
+      kubeletConfiguration:
+        maxPods: 80
+        cpuCFSQuota: false
+      tags:
+        costcenter: "910610"
+        # Tags are also templated for cluster-specificity.
+        name: "k8s-{{ $.Values.global.clusterName }}-cluster-k8s"
+        component: "kubernetes-cluster"
+        team: "it-operations"
+        criticality: "high"
+        shared-resource: "true"
+        environment: "foobar"
+        part-of: "k8s-{{ $.Values.global.clusterName }}-cluster-k8s"

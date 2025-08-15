@@ -1,0 +1,19 @@
+{{- range .Values.nodePools }}
+apiVersion: karpenter.k8s.gcp/v1alpha1
+kind: GCENodeClass
+metadata:
+  name: {{ .name }}
+spec:
+  serviceAccount: {{ $.Values.global.serviceAccount | quote }}
+  imageSelectorTerms:
+  {{- tpl (toYaml .nodeClass.imageSelectorTerms) $ | nindent 4 }}
+  networkTags:
+  {{- tpl (toYaml .nodeClass.networkTags) $ | nindent 4 }}
+  disks:
+  {{- tpl (toYaml .nodeClass.disks) $ | nindent 4 }}
+  kubeletConfiguration:
+  {{- tpl (toYaml .nodeClass.kubeletConfiguration) $ | nindent 4 }}
+  tags:
+  {{- tpl (toYaml .nodeClass.tags) $ | nindent 4 }}
+---
+{{- end }}

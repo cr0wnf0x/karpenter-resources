@@ -1,0 +1,34 @@
+{{- range .Values.nodePools }}
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: {{ .name }}
+  {{- with .annotations }}
+  annotations:
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .disruption }}
+  disruption:
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
+  template:
+    metadata:
+      {{- with .template.metadata.labels }}
+      labels:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+    spec:
+      terminationGracePeriod: {{ .template.spec.terminationGracePeriod }}
+      nodeClassRef:
+        name: {{ .name }}
+        kind: GCENodeClass
+        group: karpenter.k8s.gcp
+      {{- with .template.spec.taints }}
+      taints:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+      requirements:
+        {{- tpl (toYaml .template.spec.requirements) $ | nindent 8 }}
+---
+{{- end }}
