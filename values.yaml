@@ -1,9 +1,8 @@
 # Base values that are common across all clusters.
 # Cluster-specific overrides will be provided in separate files
-# (e.g., values-dbp06.yaml, values-dbp07.yaml).
 
 global:
-  # These are placeholders and MUST be overridden in cluster-specific files.
+  # These are placeholders and MUST be overridden
   clusterName: "default-cluster"
   projectId: "default-project"
   region: "default-region"
@@ -41,8 +40,10 @@ nodePools:
         - key: "kubernetes.io/arch"
           operator: In
           values: [ "amd64" ]
+        - key: "topology.kubernetes.io/zone"
+          operator: In
+          values: [ "europe-west4-a" ]
     nodeClass:
-      # The network tags are now templated.
       imageSelectorTerms:
       - alias: ContainerOptimizedOS@latest
       networkTags:
@@ -55,12 +56,4 @@ nodePools:
         maxPods: 80
         cpuCFSQuota: false
       tags:
-        costcenter: "910610"
-        # Tags are also templated for cluster-specificity.
-        name: "k8s-{{ $.Values.global.clusterName }}-cluster-k8s"
-        component: "kubernetes-cluster"
-        team: "it-operations"
-        criticality: "high"
-        shared-resource: "true"
-        environment: "foobar"
-        part-of: "k8s-{{ $.Values.global.clusterName }}-cluster-k8s"
+        foo: "bar"
